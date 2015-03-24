@@ -200,9 +200,56 @@ public class SolvingPredicate {
 		if (index == -1){
 			throw new RuntimeException("The Variable that was asked to be collapsed on was not present.");
 		}
-		byte[] origin = state.toByteArray();
-		return null;
+		int collapseLength = (int) Math.pow(2, index);
+		byte[] origin = makeNBytesLong(state.toByteArray(), (int) (Math.pow(2,alphabet.length)/8));
+		byte[] result = new byte[origin.length / 2];
 		
+		if (collapseLength % 8 == 0){
+			if (ThreeSATPredicate.PRINT) System.out.println(" = COLLAPSE EIGHT OR MORE CASE ("+ collapseLength/8+")");
+			result = collapseMultipleCase(origin, collapseLength / 8);
+		} else if (collapseLength % 4 == 0){
+			if (ThreeSATPredicate.PRINT) System.out.println(" = COLLAPSE FOUR CASE");
+			result = collapseFourCase(origin);
+		} else if (collapseLength % 2 == 0){
+			if (ThreeSATPredicate.PRINT) System.out.println(" = COLLAPSE TWO CASE");
+			result = collapseTwoCase(origin);
+		} else if (collapseLength % 1 == 0){
+			if (ThreeSATPredicate.PRINT) System.out.println(" = COLLAPSE ONE CASE");
+			result = collapseOneCase(origin);
+		} else {
+			System.err.println("SHOULD HAVE HAD A VALID COLLAPSE LENGTH");
+		}
+		
+		int[] newAlphabet = new int[alphabet.length - 1];
+		for(int i = 0; i < newAlphabet.length; i++){
+			newAlphabet[i] = alphabet[i + (i >= index ? 1 : 0)];
+		}
+		
+		if (ThreeSATPredicate.PRINT) System.out.println("   - ORIGIN: " + printByteArray(origin, false) + " " + Arrays.toString(alphabet));
+		if (ThreeSATPredicate.PRINT) System.out.println("   - RESULT: " + printByteArray(result, false) + " " + Arrays.toString(newAlphabet));
+	
+		BigInteger newState = new BigInteger(1, result);
+		SolvingPredicate newSP = new SolvingPredicate(newAlphabet, newState);
+		
+		return newSP;
+	}
+	
+	public static byte[] collapseMultipleCase(byte[] origin, int numBytes){
+		byte[] result = new byte[origin.length/2];
+		int resultIndex = 0;
+		int skipAt = numBytes;
+		for(int i = 0; i < origin.length; i++){
+			if (i == skipAt){
+				i += numBytes;
+				skipAt += 2 * numBytes;
+			}
+			if (i < origin.length){
+				byte a = origin[i];
+				byte b = origin[i+numBytes];
+				result[resultIndex++] = (byte) (a | b);
+			}
+		}
+		return result;
 	}
 	
 	public static byte[] collapseEightCase(byte[] origin){
