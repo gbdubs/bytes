@@ -14,6 +14,7 @@ public class PredicateSolver {
 	private List<Set<Integer>> variableSets;
 	private List<SolvingPredicate> solvingPredicates;
 	Map<Integer, Integer> counts;
+	private Map<Integer, SolvingPredicate> finalDependencies;
 	
 	public PredicateSolver(ThreeSATPredicate pred){
 		solvingPredicates = new ArrayList<SolvingPredicate>();

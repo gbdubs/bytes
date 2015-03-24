@@ -190,6 +190,85 @@ public class SolvingPredicate {
 		return result;
 	}
 	
+	public SolvingPredicate collapseOnVariable(int var){
+		int index = -1;
+		for(int i = 0; i < alphabet.length; i++){
+			if (alphabet[i] == var){
+				index = i;
+			}
+		}
+		if (index == -1){
+			throw new RuntimeException("The Variable that was asked to be collapsed on was not present.");
+		}
+		byte[] origin = state.toByteArray();
+		return null;
+		
+	}
+	
+	public static byte[] collapseEightCase(byte[] origin){
+		byte[] result = new byte[origin.length/2];
+		int resultIndex = 0;
+		for(int i = 0; i < origin.length; i+=2){
+			byte a = origin[i];
+			byte b = origin[i+1];
+			result[resultIndex++] = (byte) (a | b);
+		}
+		return result;
+	}
+	
+	public static byte[] collapseFourCase(byte[] origin){
+		byte[] result = new byte[origin.length/2];
+		int resultIndex = 0;
+		for(int i = 0; i < origin.length; i+=2){
+			byte a = origin[i];
+			a = (byte) (a & 0xf0 | ((a & 0x0f) << 4));
+			byte b = origin[i+1];
+			b = (byte) (b & 0x0f | ((b & 0xf0) >> 4));
+			result[resultIndex++] = (byte) (a | b);
+		}
+		return result;
+	}
+	
+	public static byte[] collapseTwoCase(byte[] origin){
+		byte[] result = new byte[origin.length/2];
+		int resultIndex = 0;
+		for(int i = 0; i < origin.length; i+=2){
+			byte a = origin[i];
+			byte b = origin[i+1];
+
+			byte c = (byte) ((a & 0xC0) | ((a & 0x30) << 2));
+			byte d = (byte) (((a & 0x0C) << 2) | ((a & 0x03) << 4));
+			
+			byte e = (byte) (((b & 0xC0) >> 4) | ((b & 0x30) >> 2));
+			byte f = (byte) (((b & 0x0C) >> 2) | (b & 0x03));
+			
+			result[resultIndex++] = (byte) (c | d | e | f);
+		}
+		return result;
+	}
+	
+	public static byte[] collapseOneCase(byte[] origin){
+		byte[] result = new byte[origin.length/2];
+		int resultIndex = 0;
+		for(int p = 0; p < origin.length; p+=2){
+			byte a = origin[p];
+			byte b = origin[p+1];
+
+			byte c = (byte) ((a & 0x80) << 0 | ((a & 0x40) << 1));
+			byte d = (byte) ((a & 0x20) << 1 | ((a & 0x10) << 2));
+			byte e = (byte) ((a & 0x08) << 2 | ((a & 0x04) << 3));
+			byte f = (byte) ((a & 0x02) << 3 | ((a & 0x01) << 4));
+			
+			byte g = (byte) ((b & 0x80) >> 4 | ((b & 0x40) >> 3));
+			byte h = (byte) ((b & 0x20) >> 3 | ((b & 0x10) >> 2));
+			byte i = (byte) ((b & 0x08) >> 2 | ((b & 0x04) >> 1));
+			byte j = (byte) ((b & 0x02) >> 1 | ((b & 0x01) >> 0));
+			
+			result[resultIndex++] = (byte) (c | d | e | f | g | h | i | j);
+		}
+		return result;
+	}
+	
 	private static int[] getTargetAlphabet(int[] alpha1, int[] alpha2){
 		int[] targetAlphabet = new int[alpha1.length + alpha2.length];
 		int i = 0;
