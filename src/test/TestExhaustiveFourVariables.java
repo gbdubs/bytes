@@ -1,13 +1,12 @@
 package test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
 
 import org.junit.Test;
 
 import smart.PredicateSolver;
-import smart.RandomPredicateGenerator;
 import smart.ThreeSATPredicate;
 
 public class TestExhaustiveFourVariables {

@@ -1,10 +1,6 @@
 package smart;
-import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 
 public class ThreeSATPredicate {
@@ -72,116 +68,5 @@ public class ThreeSATPredicate {
 		}
 		
 		return result;
-	}
-	
-	
-	
-	public static void main(String[] args){
-		/*ThreeSATPredicate.PRINT = true;
-		ThreeSATPredicate tsp = new ThreeSATPredicate("(!2 v !3 v !4) ^ (!0 v !1 v !3) ^ (2 v !3 v !4)");
-		PredicateSolver ps = new PredicateSolver(tsp);
-		ps.solve();
-		*/
-		testCorrect();
-	}
-	
-	public static void testCorrect(){
-		
-		
-	}
-	
-	public static void test3(){	
-		int[] numVariables = {40, 160, 640, 2560};//, 10240, 40960, 163840, 655360, 2621440, 10485760, 41943040, 83886080, 33554432, 134217728, 536870912};
-		int[] numExpressions = {50, 100, 200, 400, 800, 1600, 3200};
-		int iterations = 1000;
-		
-		RandomPredicateGenerator rpg = new RandomPredicateGenerator(numExpressions, numVariables, iterations);
-		
-		int[][] timing = new int[numVariables.length][numExpressions.length];
-		for(int i = 0; i < numVariables.length; i++){
-			for(int j = 0; j < numExpressions.length; j++){
-				ThreeSATPredicate[] preds = new ThreeSATPredicate[iterations];
-				for(int k = 0; k < iterations; k++){
-					preds[k] = rpg.read();
-				}
-				long l = System.currentTimeMillis();
-				for(int k = 0; k < iterations; k++){
-					PredicateSolver ps = new PredicateSolver(preds[k]);
-					ps.solve();
-				}
-				timing[i][j] = (int) (System.currentTimeMillis() - l);
-				System.out.println(Arrays.deepToString(timing));
-			}	
-		}
-	}
-	
-	public static void test2(){	
-		int[] numVariables = {40, 160, 640, 2560};//, 10240, 40960, 163840, 655360, 2621440, 10485760, 41943040, 83886080, 33554432, 134217728, 536870912};
-		int[] numExpressions = {50, 100, 200, 400, 800, 1600, 3200};
-		int iterations = 10000;
-		
-		int[][] timing = new int[numVariables.length][numExpressions.length];
-		for(int i = 0; i < numVariables.length; i++){
-			int nVars = numVariables[i];
-			for(int j = 0; j < numExpressions.length; j++){
-				int nExpr = numExpressions[j];
-				ThreeSATPredicate[] preds = new ThreeSATPredicate[iterations];
-				for(int k = 0; k < iterations; k++){
-					preds[k] = RandomPredicateGenerator.generateRandomThreeSat(nExpr, nVars);
-				}
-				long l = System.currentTimeMillis();
-				for(int k = 0; k < iterations; k++){
-					PredicateSolver ps = new PredicateSolver(preds[k]);
-					ps.solve();
-				}
-				timing[i][j] = (int) (System.currentTimeMillis() - l);
-				System.out.println(Arrays.deepToString(timing));
-			}	
-		}
-	}
-	
-	public static void test(){
-		int nv = 200;
-		int n = 10;
-		int batches = 10;
-		int x = 2;
-		boolean doRegular = true;
-		long[][] time = new long[2][nv+1];
-		for(int v = 3; v <= nv; v++){
-			for(int batch = 0; batch < batches; batch++){
-				List<ThreeSATPredicate> randomPredicates = new ArrayList<ThreeSATPredicate>();
-				for(int i = 0; i < n/batches; i++){
-					
-					randomPredicates.add(RandomPredicateGenerator.generateRandomThreeSat(x, v));
-				}
-				boolean[] classic = new boolean[n/batches];
-				boolean[] fancy = new boolean[n/batches];
-				long l = System.currentTimeMillis();
-				if (doRegular){
-					for (int i = 0; i < n/batches; i++){
-						boolean[] result = randomPredicates.get(i).satisfiable();
-						classic[i] = (result != null);
-					}
-					time[0][v] += System.currentTimeMillis() - l;
-				}
-				l = System.currentTimeMillis();
-				for (int i = 0; i < n/batches; i++){
-					PredicateSolver ps = new PredicateSolver(randomPredicates.get(i));
-					fancy[i] = !ps.solve().equals(BigInteger.ZERO);
-				}
-				time[1][v] += System.currentTimeMillis() - l;
-				for(int i = 0; i < n/batches; i++){
-					if (classic[i] != fancy[i] && doRegular) System.out.println("DISAGREE: " + randomPredicates.get(i));
-				}
-				System.out.println("Batch " + batch + " complete.");
-			}
-			if (time[0][v] > 10000){
-				doRegular = false;
-			}
-			System.out.println("V = " + v);	
-			System.out.println("TIME COMPARISON");
-			System.out.println("Classic: " + Arrays.toString(time[0]));
-			System.out.println("Fancy:   " + Arrays.toString(time[1]));
-		}
 	}
 }
