@@ -7,12 +7,13 @@ import java.math.BigInteger;
 import org.junit.Test;
 
 import smart.PredicateSolver;
+import smart.RandomPredicateGenerator;
 import smart.ThreeSATPredicate;
 
 public class TestExhaustiveFourVariables {
 
 	@Test
-	public void testExhaustiveThreeVars(){
+	public void testExhaustiveFourVarsThreeExprs(){
 		for(int i = 0; i < 32*32*32; i++){
 			ThreeSATPredicate tsp = new ThreeSATPredicate(getExpression(i));
 			boolean classicSat = tsp.satisfiable() != null;

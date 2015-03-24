@@ -66,7 +66,7 @@ public class SolvingPredicate {
 		return transposeAlphabet(subTargetAlphabet, transposedOnce, targetAlphabet);
 	}
 	
-	private static BigInteger transposeAlphabetOneVariable(int[] originalAlphabet, BigInteger originalState, int[] newAlphabet){
+	public static BigInteger transposeAlphabetOneVariable(int[] originalAlphabet, BigInteger originalState, int[] newAlphabet){
 		int i = 0; 
 		while (i < originalAlphabet.length && originalAlphabet[i] == newAlphabet[i]){
 			i++;
@@ -80,81 +80,113 @@ public class SolvingPredicate {
 		
 		if (i == originalAlphabet.length){
 			if (ThreeSATPredicate.PRINT) System.out.println(" = DUPLICATE CASE");
-			for(int k = 0; k < origin.length; k++){
-				result[k] = origin[k];
-				result[k+origin.length] = origin[k];
-			}
+			result = duplicateCase(origin);
 		} else if (repetitionLength % 8 == 0){
 			if (ThreeSATPredicate.PRINT) System.out.println(" = EIGHT CASE");
-			int numberOfBytesRepeated = repetitionLength / 8;
-			int numberOfRepetitions = bitStringLength / repetitionLength;
-			for(int repetition = 0; repetition < numberOfRepetitions; repetition++){
-				for(int byteTransfer = 0; byteTransfer < numberOfBytesRepeated; byteTransfer++){
-					int originIndex = repetition * numberOfBytesRepeated + byteTransfer;
-					int resultIndex = repetition * 2 * numberOfBytesRepeated + byteTransfer;
-					int resultTwoIndex = repetition * 2 * numberOfBytesRepeated + numberOfBytesRepeated + byteTransfer;
-					byte temp = origin[originIndex];
-					result[resultIndex] = temp;
-					result[resultTwoIndex] = temp;
-				}
-			}
+			result = repeatEightCase(origin, repetitionLength, bitStringLength);
 		} else if (repetitionLength % 4 == 0){
 			if (ThreeSATPredicate.PRINT) System.out.println(" = FOUR CASE");
-			int resultIndex = 0;
-			for (byte b : origin){
-				byte front = (byte) (b & 0xf0);
-				front = (byte) (front | (front >> 4));
-				
-				byte back = (byte) (b & 0x0f);
-				back = (byte) (back | (back << 4));
-
-				result[resultIndex++] = front;
-				result[resultIndex++] = back;
-			}
+			result = repeatFourCase(origin);
 		} else if (repetitionLength % 2 == 0){
 			if (ThreeSATPredicate.PRINT) System.out.println(" = TWO CASE");
-			int resultIndex = 0;
-			for (byte o : origin){
-				byte a = (byte) (o & 0xc0);
-				a = (byte) (a | (a >> 2));
-				byte b = (byte) (o & 0x30);
-				b = (byte) ((b >> 2) | (b >> 4));
-				result[resultIndex++] = (byte) (a | b);
-				byte c = (byte) (o & 0x0c);
-				c = (byte) ((c << 4) | (c << 2));
-				byte d = (byte) (o & 0x03);
-				d = (byte) (d | (d << 2));
-				result[resultIndex++] = (byte) (c | d);
-			}
+			result = repeatTwoCase(origin);
 		} else if (repetitionLength % 1 == 0){
 			if (ThreeSATPredicate.PRINT) System.out.println(" = ONE CASE");
-			int resultIndex = 0;
-			for (byte o : origin){
-				byte a = (byte) (o & 0x80);
-				a = (byte) (a | (a >> 1));
-				byte b = (byte) (o & 0x40);
-				b = (byte) ((b >> 1) | (b >> 2));
-				byte c = (byte) (o & 0x20);
-				c = (byte) ((c >> 2) | (c >> 3));
-				byte d = (byte) (o & 0x10);
-				d = (byte) ((d >> 3) | (d >> 4));
-				result[resultIndex++] = (byte) (a | b | c | d);
-				byte e = (byte) (o & 0x08);
-				e = (byte) ((e << 4) | (e << 3));
-				byte f = (byte) (o & 0x04);
-				f = (byte) ((f << 3) | (f << 2));
-				byte g = (byte) (o & 0x02);
-				g = (byte) ((g << 2) | (g << 1));
-				byte h = (byte) (o & 0x01);
-				h = (byte) ((h << 1) | (h));
-				result[resultIndex++] = (byte) (e | f | g | h);
-			}
+			result = repeatOneCase(origin);
+		} else {
+			System.err.println("SHOULD HAVE HAD A VALID REPETITION LENGTH");
 		}
 		
 		if (ThreeSATPredicate.PRINT) System.out.println("   - ORIGIN: " + printByteArray(origin, false) + " " + Arrays.toString(originalAlphabet));
 		if (ThreeSATPredicate.PRINT) System.out.println("   - RESULT: " + printByteArray(result, false) + " " + Arrays.toString(newAlphabet));
 		BigInteger toReturn = new BigInteger(1, result);
 		return toReturn;
+	}
+	
+	public static byte[] duplicateCase(byte[] origin){
+		byte[] result = new byte[origin.length * 2];
+		for(int k = 0; k < origin.length; k++){
+			result[k] = origin[k];
+			result[k+origin.length] = origin[k];
+		}
+		return result;
+	}
+	
+	public static byte[] repeatEightCase(byte[] origin, int repetitionLength, int bitStringLength){
+		byte[] result = new byte[origin.length * 2];
+		int numberOfBytesRepeated = repetitionLength / 8;
+		int numberOfRepetitions = bitStringLength / repetitionLength;
+		for(int repetition = 0; repetition < numberOfRepetitions; repetition++){
+			for(int byteTransfer = 0; byteTransfer < numberOfBytesRepeated; byteTransfer++){
+				int originIndex = repetition * numberOfBytesRepeated + byteTransfer;
+				int resultIndex = repetition * 2 * numberOfBytesRepeated + byteTransfer;
+				int resultTwoIndex = repetition * 2 * numberOfBytesRepeated + numberOfBytesRepeated + byteTransfer;
+				byte temp = origin[originIndex];
+				result[resultIndex] = temp;
+				result[resultTwoIndex] = temp;
+			}
+		}
+		return result;
+	}
+	
+	public static byte[] repeatFourCase(byte[] origin){
+		byte[] result = new byte[origin.length * 2];
+		int resultIndex = 0;
+		for (byte b : origin){
+			byte front = (byte) (b & 0xf0);
+			front = (byte) (front | (front >> 4));
+			
+			byte back = (byte) (b & 0x0f);
+			back = (byte) (back | (back << 4));
+
+			result[resultIndex++] = front;
+			result[resultIndex++] = back;
+		}
+		return result;
+	}
+	
+	public static byte[] repeatTwoCase(byte[] origin){
+		byte[] result = new byte[origin.length * 2];
+		int resultIndex = 0;
+		for (byte o : origin){
+			byte a = (byte) (o & 0xc0);
+			a = (byte) (a | (a >> 2));
+			byte b = (byte) (o & 0x30);
+			b = (byte) ((b >> 2) | (b >> 4));
+			result[resultIndex++] = (byte) (a | b);
+			byte c = (byte) (o & 0x0c);
+			c = (byte) ((c << 4) | (c << 2));
+			byte d = (byte) (o & 0x03);
+			d = (byte) (d | (d << 2));
+			result[resultIndex++] = (byte) (c | d);
+		}
+		return result;
+	}
+	
+	public static byte[] repeatOneCase(byte[] origin){
+		byte[] result = new byte[origin.length * 2];
+		int resultIndex = 0;
+		for (byte o : origin){
+			byte a = (byte) (o & 0x80);
+			a = (byte) (a | (a >> 1));
+			byte b = (byte) (o & 0x40);
+			b = (byte) ((b >> 1) | (b >> 2));
+			byte c = (byte) (o & 0x20);
+			c = (byte) ((c >> 2) | (c >> 3));
+			byte d = (byte) (o & 0x10);
+			d = (byte) ((d >> 3) | (d >> 4));
+			result[resultIndex++] = (byte) (a | b | c | d);
+			byte e = (byte) (o & 0x08);
+			e = (byte) ((e << 4) | (e << 3));
+			byte f = (byte) (o & 0x04);
+			f = (byte) ((f << 3) | (f << 2));
+			byte g = (byte) (o & 0x02);
+			g = (byte) ((g << 2) | (g << 1));
+			byte h = (byte) (o & 0x01);
+			h = (byte) ((h << 1) | (h));
+			result[resultIndex++] = (byte) (e | f | g | h);
+		}
+		return result;
 	}
 	
 	private static int[] getTargetAlphabet(int[] alpha1, int[] alpha2){
@@ -216,7 +248,6 @@ public class SolvingPredicate {
 	}
 	
 	public String toString(){
-		
 		String result = id + " - ALPHABET: " + Arrays.toString(alphabet) + "\n";
 		result += id + " - STATE : " + printByteArray(state.toByteArray(), false);
 		return result;
@@ -235,12 +266,7 @@ public class SolvingPredicate {
 		int k = n;
 		for(int i = byteArray.length - 1; i >= 0 && k > 0; i--){
 			k--;
-			try{
-				result[k] = byteArray[i];
-			} catch (java.lang.ArrayIndexOutOfBoundsException aioffbe){
-				System.out.println(Arrays.toString(byteArray) + " " + n);
-				System.exit(1);
-			}
+			result[k] = byteArray[i];
 		}
 		return result;
 	}

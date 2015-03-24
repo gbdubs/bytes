@@ -11,7 +11,7 @@ import org.junit.runners.Suite;
 	TestTwoPowers.class,
 	TestExhaustiveThreeVariables.class,
 	TestExhaustiveFourVariables.class,
-	TestRandomFiveVariables.class,
+	//TestRandomFiveVariables.class,
 	TestNegatedCombination.class
 })
 

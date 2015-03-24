@@ -48,14 +48,6 @@ public class SubPredicate {
 		return result;
 	}
 	
-	public static void main(String[] args){
-		ThreeSATPredicate tsp = new ThreeSATPredicate("(D v C v !A) ^ (!A v A) ^ (!D v C v B v A v !B)");
-		System.out.println(tsp.toString());
-		PredicateSolver ps = new PredicateSolver(tsp);
-		System.out.println(ps.solve().toString());
-		
-	}
-	
 	// SORTS VARIABLES IN EXPRESSION
 	
 	private void sortVariables(){

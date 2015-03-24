@@ -77,34 +77,37 @@ public class ThreeSATPredicate {
 	
 	
 	public static void main(String[] args){
-		ThreeSATPredicate.PRINT = true;
+		/*ThreeSATPredicate.PRINT = true;
 		ThreeSATPredicate tsp = new ThreeSATPredicate("(!2 v !3 v !4) ^ (!0 v !1 v !3) ^ (2 v !3 v !4)");
 		PredicateSolver ps = new PredicateSolver(tsp);
 		ps.solve();
-		
-		//testCorrect();
+		*/
+		testCorrect();
 	}
 	
 	public static void testCorrect(){
 		PRINT = false;
-		int trials = 1000;
-		int variables = 5;
-		int expressions = 2;
+		int trials = 10000;
+		int variables = 4;
+		int expressions = 20;
 		ThreeSATPredicate tsp = null;
 		boolean equal = true;
+		int unsat = 0;
 		while (equal && trials-- > 0){
 			tsp = RandomPredicateGenerator.generateRandomThreeSat(expressions, variables);
 			boolean satisfiable = tsp.satisfiable() != null;
 			boolean fancySat = ! (new PredicateSolver(tsp)).solve().equals(BigInteger.ZERO);
 			equal = (satisfiable == fancySat);
+			if (!satisfiable) unsat++;
+			if (!equal){
+				PRINT = true;
+				System.out.println(tsp);
+				System.out.println((new PredicateSolver(tsp)).solve().toString());
+				System.exit(1);
+			} 
 		}
-		if (!equal){
-			PRINT = true;
-			System.out.println(tsp);
-			System.out.println((new PredicateSolver(tsp)).solve().toString());
-		} else {
-			System.out.println("ALL GOOD AMIGOS.");
-		}
+		System.out.println("ALL GOOD AMIGOS. UNSAT=" + unsat);
+		
 	}
 	
 	public static void test3(){	

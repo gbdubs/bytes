@@ -18,6 +18,7 @@ public class SetTree {
 		this.level = level;
 		this.parent = parent;
 		this.members = new HashSet<SolvingPredicate>();
+		this.numLevels = numLevels;
 	}
 	
 	public void addSolvingPredicate(SolvingPredicate sp){
@@ -32,6 +33,7 @@ public class SetTree {
 				if (undefinedChild == null){
 					undefinedChild = new SetTree(level + 1, this, numLevels);
 				}
+				undefinedChild.addSolvingPredicate(sp);
 			}
 		}
 	}
