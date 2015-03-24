@@ -22,6 +22,7 @@ public class TestRandomFiveVariables {
 				System.out.println("NOT EQUAL: " + tsp.toString());
 				ThreeSATPredicate.PRINT = true;
 				System.out.println(ps.solve().toString());
+				assertTrue(false);
 				System.exit(1);
 			}
 			assertTrue(actuallySatisfiable == fancySatisfiable);
@@ -39,6 +40,7 @@ public class TestRandomFiveVariables {
 				System.out.println("NOT EQUAL: " + tsp.toString());
 				ThreeSATPredicate.PRINT = true;
 				System.out.println(ps.solve().toString());
+				assertTrue(false);
 				System.exit(1);
 			}
 			assertTrue(actuallySatisfiable == fancySatisfiable);
@@ -56,6 +58,7 @@ public class TestRandomFiveVariables {
 				System.out.println("NOT EQUAL: " + tsp.toString());
 				ThreeSATPredicate.PRINT = true;
 				System.out.println(ps.solve().toString());
+				assertTrue(false);
 				System.exit(1);
 			}
 			assertTrue(actuallySatisfiable == fancySatisfiable);

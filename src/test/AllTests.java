@@ -9,6 +9,8 @@ import org.junit.runners.Suite;
 	TestHelperFunctions.class,
 	TestPredicateNumberSystem.class,
 	TestTwoPowers.class,
+	TestExhaustiveThreeVariables.class,
+	TestExhaustiveFourVariables.class,
 	TestRandomFiveVariables.class,
 	TestNegatedCombination.class
 })

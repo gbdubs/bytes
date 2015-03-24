@@ -9,11 +9,11 @@ import org.junit.Test;
 import smart.PredicateSolver;
 import smart.ThreeSATPredicate;
 
-public class TestExhaustiveThreeVariables {
+public class TestExhaustiveFourVariables {
 
 	@Test
 	public void testExhaustiveThreeVars(){
-		for(int i = 0; i < 8*8*8; i++){
+		for(int i = 0; i < 32*32*32; i++){
 			ThreeSATPredicate tsp = new ThreeSATPredicate(getExpression(i));
 			boolean classicSat = tsp.satisfiable() != null;
 			boolean fancySat = ! (new PredicateSolver(tsp)).solve().equals(BigInteger.ZERO);
@@ -22,32 +22,34 @@ public class TestExhaustiveThreeVariables {
 	}
 	
 	public static String getExpression(int i){
-		String first = getSubExpression(i / 64);
-		String second = getSubExpression((i % 64)/8);
-		String third = getSubExpression(i % 8);
+		String first = getSubExpression(i / (32*32));
+		String second = getSubExpression((i % (32*32))/32);
+		String third = getSubExpression(i % 32);
 		return first + " ^ " + second + " ^ " + third;
 	}
 	
-	public static void main(String[] args){
-		for(int i = 0; i < 8; i++){
-			System.out.println(getSubExpression(i));
-		}
-	}
-	
 	public static String getSubExpression(int i){
+		int ommitted = i / 8;
+		i = i % 8;
+		int k = 0;
+		if (ommitted == k) k++;
 		String result = "(";
 		if (i / 4 == 1){
 			result = result + "!";
 		}
-		result = result + "0 v ";
+		result = result + k + " v ";
 		if (i % 4 >= 2){
 			result = result + "!";
 		}
-		result = result + "1 v ";
+		k++;
+		if (ommitted == k) k++;
+		result = result + k + " v ";
 		if (i % 2 == 1){
 			result = result + "!";
 		}
-		result = result + "2)";
+		k++;
+		if (ommitted == k) k++;
+		result = result + k +")";
 		return result;
 	}
 	
