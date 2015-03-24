@@ -134,10 +134,10 @@ public class SolvingPredicate {
 		int resultIndex = 0;
 		for (byte b : origin){
 			byte front = (byte) (b & 0xf0);
-			front = (byte) (front | (front >> 4));
+			front = (byte) (front | ((front & 0xff) >> 4));
 			
 			byte back = (byte) (b & 0x0f);
-			back = (byte) (back | (back << 4));
+			back = (byte) (back | ((back & 0xff) << 4));
 
 			result[resultIndex++] = front;
 			result[resultIndex++] = back;
@@ -150,14 +150,15 @@ public class SolvingPredicate {
 		int resultIndex = 0;
 		for (byte o : origin){
 			byte a = (byte) (o & 0xc0);
-			a = (byte) (a | (a >> 2));
+			byte temp = (byte) ((a & 0xff) >>> 2);
+			a = (byte) (a | temp);
 			byte b = (byte) (o & 0x30);
-			b = (byte) ((b >> 2) | (b >> 4));
+			b = (byte) (((b & 0xff) >> 2) | ((b & 0xff) >> 4));
 			result[resultIndex++] = (byte) (a | b);
 			byte c = (byte) (o & 0x0c);
-			c = (byte) ((c << 4) | (c << 2));
+			c = (byte) (((c & 0xff) << 4) | ((c & 0xff) << 2));
 			byte d = (byte) (o & 0x03);
-			d = (byte) (d | (d << 2));
+			d = (byte) ((d & 0xff) | ((d & 0xff) << 2));
 			result[resultIndex++] = (byte) (c | d);
 		}
 		return result;
@@ -168,22 +169,22 @@ public class SolvingPredicate {
 		int resultIndex = 0;
 		for (byte o : origin){
 			byte a = (byte) (o & 0x80);
-			a = (byte) (a | (a >> 1));
+			a = (byte) (a | ((a  & 0xff) >> 1));
 			byte b = (byte) (o & 0x40);
-			b = (byte) ((b >> 1) | (b >> 2));
+			b = (byte) (((b & 0xff) >> 1) | ((b & 0xff) >> 2));
 			byte c = (byte) (o & 0x20);
-			c = (byte) ((c >> 2) | (c >> 3));
+			c = (byte) (((c & 0xff) >> 2) | ((c & 0xff) >> 3));
 			byte d = (byte) (o & 0x10);
-			d = (byte) ((d >> 3) | (d >> 4));
+			d = (byte) (((d & 0xff) >> 3) | ((d & 0xff) >> 4));
 			result[resultIndex++] = (byte) (a | b | c | d);
 			byte e = (byte) (o & 0x08);
-			e = (byte) ((e << 4) | (e << 3));
+			e = (byte) (((e & 0xff) << 4) | ((e & 0xff) << 3));
 			byte f = (byte) (o & 0x04);
-			f = (byte) ((f << 3) | (f << 2));
+			f = (byte) (((f & 0xff) << 3) | ((f & 0xff) << 2));
 			byte g = (byte) (o & 0x02);
-			g = (byte) ((g << 2) | (g << 1));
+			g = (byte) (((g & 0xff) << 2) | ((g & 0xff) << 1));
 			byte h = (byte) (o & 0x01);
-			h = (byte) ((h << 1) | (h));
+			h = (byte) (((h << 1) & 0xff) | h);
 			result[resultIndex++] = (byte) (e | f | g | h);
 		}
 		return result;
