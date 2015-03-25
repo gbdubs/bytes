@@ -16,7 +16,10 @@ public class TestExhaustiveFourVariables {
 		for(int i = 0; i < 32*32*32; i++){
 			ThreeSATPredicate tsp = new ThreeSATPredicate(getExpression(i));
 			boolean classicSat = tsp.satisfiable() != null;
-			boolean fancySat = ! (new PredicateSolver(tsp)).solve().equals(BigInteger.ZERO);
+			boolean fancySat = (new PredicateSolver(tsp)).solve() != null;
+			if (classicSat != fancySat){
+				
+			}
 			assertTrue(classicSat == fancySat);
 		}
 	}

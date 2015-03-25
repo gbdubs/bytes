@@ -16,7 +16,7 @@ public class TestExhaustiveThreeVariables {
 		for(int i = 0; i < 8*8*8; i++){
 			ThreeSATPredicate tsp = new ThreeSATPredicate(getExpression(i));
 			boolean classicSat = tsp.satisfiable() != null;
-			boolean fancySat = ! (new PredicateSolver(tsp)).solve().equals(BigInteger.ZERO);
+			boolean fancySat = (new PredicateSolver(tsp)).solve() != null;
 			assertTrue(classicSat == fancySat);
 		}
 	}
@@ -26,12 +26,6 @@ public class TestExhaustiveThreeVariables {
 		String second = getSubExpression((i % 64)/8);
 		String third = getSubExpression(i % 8);
 		return first + " ^ " + second + " ^ " + third;
-	}
-	
-	public static void main(String[] args){
-		for(int i = 0; i < 8; i++){
-			System.out.println(getSubExpression(i));
-		}
 	}
 	
 	public static String getSubExpression(int i){

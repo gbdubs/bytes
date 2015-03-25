@@ -17,13 +17,14 @@ public class TestRandomFiveVariables {
 			ThreeSATPredicate tsp = RandomPredicateGenerator.generateRandomThreeSat(3, 5);
 			PredicateSolver ps = new PredicateSolver(tsp);
 			boolean actuallySatisfiable = tsp.satisfiable() != null;
-			boolean fancySatisfiable = ! ps.solve().equals(BigInteger.ZERO);
+			boolean fancySatisfiable = ps.solve() != null;
 			if (actuallySatisfiable != fancySatisfiable){
 				System.out.println("NOT EQUAL: " + tsp.toString());
 				ThreeSATPredicate.PRINT = true;
-				System.out.println(ps.solve().toString());
+				ps = new PredicateSolver(tsp);
+				System.out.println(ps.solve());
+				ThreeSATPredicate.PRINT = false;
 				assertTrue(false);
-				System.exit(1);
 			}
 			assertTrue(actuallySatisfiable == fancySatisfiable);
 		}
@@ -35,13 +36,13 @@ public class TestRandomFiveVariables {
 			ThreeSATPredicate tsp = RandomPredicateGenerator.generateRandomThreeSat(10, 5);
 			PredicateSolver ps = new PredicateSolver(tsp);
 			boolean actuallySatisfiable = tsp.satisfiable() != null;
-			boolean fancySatisfiable = ! ps.solve().equals(BigInteger.ZERO);
+			boolean fancySatisfiable = ps.solve() != null;
 			if (actuallySatisfiable != fancySatisfiable){
 				System.out.println("NOT EQUAL: " + tsp.toString());
 				ThreeSATPredicate.PRINT = true;
 				System.out.println(ps.solve().toString());
+				ThreeSATPredicate.PRINT = false;
 				assertTrue(false);
-				System.exit(1);
 			}
 			assertTrue(actuallySatisfiable == fancySatisfiable);
 		}
@@ -53,13 +54,13 @@ public class TestRandomFiveVariables {
 			ThreeSATPredicate tsp = RandomPredicateGenerator.generateRandomThreeSat(20, 5);
 			PredicateSolver ps = new PredicateSolver(tsp);
 			boolean actuallySatisfiable = tsp.satisfiable() != null;
-			boolean fancySatisfiable = ! ps.solve().equals(BigInteger.ZERO);
+			boolean fancySatisfiable = ps.solve() != null;
 			if (actuallySatisfiable != fancySatisfiable){
 				System.out.println("NOT EQUAL: " + tsp.toString());
 				ThreeSATPredicate.PRINT = true;
 				System.out.println(ps.solve().toString());
+				ThreeSATPredicate.PRINT = false;
 				assertTrue(false);
-				System.exit(1);
 			}
 			assertTrue(actuallySatisfiable == fancySatisfiable);
 		}

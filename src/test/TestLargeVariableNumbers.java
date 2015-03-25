@@ -23,7 +23,7 @@ public class TestLargeVariableNumbers {
 		while (equal && trials-- > 0){
 			tsp = RandomPredicateGenerator.generateRandomThreeSat(expressions, variables);
 			boolean satisfiable = tsp.satisfiable() != null;
-			boolean fancySat = ! (new PredicateSolver(tsp)).solve().equals(BigInteger.ZERO);
+			boolean fancySat = (new PredicateSolver(tsp)).solve() != null;
 			equal = (satisfiable == fancySat);
 			if (!satisfiable) unsat++;
 			if (!equal){

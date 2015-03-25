@@ -46,7 +46,7 @@ public class SolvingPredicate {
 		return result;
 	}
 	
-	private static BigInteger transposeAlphabet(int[] originalAlphabet, BigInteger originalState, int[] targetAlphabet){
+	public static BigInteger transposeAlphabet(int[] originalAlphabet, BigInteger originalState, int[] targetAlphabet){
 		if (originalAlphabet.length == targetAlphabet.length){
 			return originalState;
 		}
@@ -85,9 +85,7 @@ public class SolvingPredicate {
 		if (originalAlphabet.length < 3){
 			result = new byte[1];
 			result[0] = transposeAlphabetOneVariablePartialState(i, originalState.byteValue());
-		}
-		
-		if (i == originalAlphabet.length){
+		} else if (i == originalAlphabet.length){
 			if (ThreeSATPredicate.PRINT) System.out.println(" = DUPLICATE CASE");
 			result = duplicateCase(origin);
 		} else if (repetitionLength % 8 == 0){
@@ -113,23 +111,16 @@ public class SolvingPredicate {
 	}
 	
 	public static byte transposeAlphabetOneVariablePartialState(int index, byte b) {
-		/*if (numVars == 1){
-			if (index == 0){
-				return (byte) (((b & 0x02) << 2) | ((b & 0x02) << 1) | ((b & 0x01) << 1) | ((b & 0x01) << 0));
-			} else if (index == 1){
-				
-			}
-		} else if (numVars == 2){*/
-			if (index == 0){
-				byte firstHalf = (byte) (((b & 0x08) << 4) | ((b & 0x08) << 3) | ((b & 0x04) << 3) | ((b & 0x04) << 2));
-				byte secondHalf = (byte) (((b & 0x02) << 2) | ((b & 0x02) << 1) | ((b & 0x01) << 1) | ((b & 0x01) << 0));
-				return (byte) (firstHalf | secondHalf);
-			} else if (index == 1) {
-				return (byte) (((b & 0x0C) << 4) | ((b & 0x0C) << 2) | ((b & 0x03) << 2) | ((b & 0x03) << 0));
-			} else if (index == 2){
-				return (byte) (((b & 0x0F) << 4) | (b & 0x0F));
-			}
-	//	}
+		if (index == 0){
+			byte firstHalf = (byte) (((b & 0x08) << 4) | ((b & 0x08) << 3) | ((b & 0x04) << 3) | ((b & 0x04) << 2));
+			byte secondHalf = (byte) (((b & 0x02) << 2) | ((b & 0x02) << 1) | ((b & 0x01) << 1) | ((b & 0x01) << 0));
+			return (byte) (firstHalf | secondHalf);
+		} else if (index == 1) {
+			return (byte) (((b & 0x0C) << 4) | ((b & 0x0C) << 2) | ((b & 0x03) << 2) | ((b & 0x03) << 0));
+		} else if (index == 2){
+			return (byte) (((b & 0x0F) << 4) | (b & 0x0F));
+		}
+	
 		System.out.println("ERROR! CODE SHOULD NOT BE REACHED!");
 		return 0;
 	}
@@ -232,10 +223,13 @@ public class SolvingPredicate {
 			throw new RuntimeException("The Variable that was asked to be collapsed on was not present.");
 		}
 		int collapseLength = (int) Math.pow(2, index);
-		byte[] origin = makeNBytesLong(state.toByteArray(), (int) (Math.pow(2,alphabet.length)/8));
+		byte[] origin = makeNBytesLong(state.toByteArray(), (int) (Math.ceil(Math.pow(2,alphabet.length)/8)));
 		byte[] result = new byte[origin.length / 2];
 		
-		if (collapseLength % 8 == 0){
+		if (origin.length == 1){
+			result = new byte[1];
+			result[0] = collapseOnSingleByte(index, origin[0]);
+		} else if (collapseLength % 8 == 0){
 			if (ThreeSATPredicate.PRINT) System.out.println(" = COLLAPSE EIGHT OR MORE CASE ("+ collapseLength/8+")");
 			result = collapseMultipleCase(origin, collapseLength / 8);
 		} else if (collapseLength % 4 == 0){
@@ -263,6 +257,20 @@ public class SolvingPredicate {
 		return newSP;
 	}
 	
+	private byte collapseOnSingleByte(int index, byte b) {
+		if (index == 0){
+			byte firstHalf = (byte) (((b & 0x80) >> 4) | ((b & 0x40) >> 3) | ((b & 0x20) >> 3) | ((b & 0x10) >> 2));
+			byte secondHalf = (byte) (((b & 0x08) >> 2) | ((b & 0x04) >> 1) | ((b & 0x02) >> 1) | ((b & 0x01) >> 0));
+			return (byte) (firstHalf | secondHalf);
+		} else if (index == 1) {
+			return (byte) (((b & 0xC0) >> 4) | ((b & 0x30) >> 2) | ((b & 0x0C) >> 2) | ((b & 0x03) >> 0));
+		} else if (index == 2){
+			return (byte) (((b & 0xF0) >> 4) | (b & 0x0F));
+		}
+		System.out.println("ERROR! CODE SHOULD NOT BE REACHED!");
+		return 0;
+	}
+
 	public static byte[] collapseMultipleCase(byte[] origin, int numBytes){
 		byte[] result = new byte[origin.length/2];
 		int resultIndex = 0;

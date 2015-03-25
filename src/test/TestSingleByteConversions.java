@@ -46,6 +46,36 @@ public class TestSingleByteConversions {
 	}
 	
 	@Test
+	public void testCollapseToSingleVariable(){
+		byte[][] originals = {
+				{(byte) 0x08}, {(byte) 0x0D}, {(byte) 0x0A}, {(byte) 0x05},
+				{(byte) 0x08}, {(byte) 0x0D}, {(byte) 0x0A}, {(byte) 0x05},
+		};
+		
+		int[][] originalAlphabet = {
+				{0, 1}, {0, 1}, {0, 1}, {0, 1},
+				{0, 1}, {0, 1}, {0, 1}, {0, 1}
+		};
+		
+		int[] toRemove = {
+				0, 0, 0, 0,
+				1, 1, 1, 1
+		};
+		
+		byte[][] expected = {
+				{(byte) 0x02},{(byte) 0x03},{(byte) 0x03},{(byte) 0x03},
+				{(byte) 0x02},{(byte) 0x03},{(byte) 0x02},{(byte) 0x01}
+		};
+		
+		for (int i = 0; i < originals.length; i++){
+			BigInteger expectation = new BigInteger(1,expected[i]);
+			SolvingPredicate sp = new SolvingPredicate(originalAlphabet[i], new BigInteger(1, originals[i]));
+			BigInteger result = sp.collapseOnVariable(toRemove[i]).getState();
+			assertEquals(expectation, result);
+		}
+	}
+	
+	@Test
 	public void testSingleByteReplication(){
 		byte[][] originals = {
 				{(byte) 0x0D}, {(byte) 0x04}, {(byte) 0x06}, {(byte) 0x03}, {(byte) 0x02}, {(byte) 0x01},
@@ -73,7 +103,7 @@ public class TestSingleByteConversions {
 		
 		for (int i = 0; i < originals.length; i++){
 			BigInteger expectation = new BigInteger(1,expected[i]);
-			BigInteger result = SolvingPredicate.transposeAlphabetOneVariable(originalAlphabet[i], new BigInteger(1, originals[i]), newAlphabet[i]);
+			BigInteger result = SolvingPredicate.transposeAlphabet(originalAlphabet[i], new BigInteger(1, originals[i]), newAlphabet[i]);
 			assertEquals(expectation, result);
 		}
 	}
