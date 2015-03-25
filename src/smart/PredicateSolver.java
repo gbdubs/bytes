@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class PredicateSolver {
 	
-	private SetTree tree;
+	private SetTree<SolvingPredicate> tree;
 	private List<Set<Integer>> variableSets;
 	private List<SolvingPredicate> solvingPredicates;
 	private Map<Integer, Set<SolvingPredicate>> definedOn;
@@ -37,7 +37,7 @@ public class PredicateSolver {
 		for(SubPredicate sp : pred.subPredicates){
 			max = Math.max(max, sp.variables[2]);
 		}
-		tree = new SetTree(0, null, max);
+		tree = new SetTree<SolvingPredicate>(0, null, max);
 		for(SubPredicate sp : pred.subPredicates){
 			addSolvingPredicate(sp.getSolvingPredicate());
 		}
@@ -135,7 +135,7 @@ public class PredicateSolver {
 	}
 	
 	private int[] choosePairToCombine() {
-		SetTree st = tree.getDeepestTwoPersonSet();
+		SetTree<SolvingPredicate> st = tree.getDeepestTwoMemberTree();
 		List<SolvingPredicate> members = st.getMembers();
 		int i = solvingPredicates.indexOf(members.get(0));
 		int j = solvingPredicates.indexOf(members.get(1));
@@ -158,7 +158,7 @@ public class PredicateSolver {
 			sps.add(sp);
 			definedOn.put(c, sps);
 		}
-		tree.addSolvingPredicate(sp);
+		tree.addItem(sp);
 	}
 
 	private SolvingPredicate removeSolvingPredicate(SolvingPredicate toRemove){
@@ -176,7 +176,7 @@ public class PredicateSolver {
 				definedOn.put(c, sps);
 			}
 		}
-		tree.removeSolvingPredicate(sp);
+		tree.removeItem(sp);
 		return sp;
 	}
 

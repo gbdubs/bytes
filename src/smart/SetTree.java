@@ -1,44 +1,46 @@
 package smart;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class SetTree {
+public class SetTree<T> {
 
-	private SetTree parent;
+	private SetTree<T> parent;
 	private int level;
 	private int numLevels;
-	private SetTree definedChild;
-	private SetTree undefinedChild;
-	private Set<SolvingPredicate> members;
+	private SetTree<T> definedChild;
+	private SetTree<T> undefinedChild;
+	private Set<T> members;
 	
-	public SetTree(int level, SetTree parent, int numLevels){
+	public SetTree(int level, SetTree<T> parent, int numLevels){
 		this.level = level;
 		this.parent = parent;
-		this.members = new HashSet<SolvingPredicate>();
+		this.members = new HashSet<T>();
 		this.numLevels = numLevels;
 	}
 	
-	public void addSolvingPredicate(SolvingPredicate sp){
+	public void addItem(T sp){
 		members.add(sp);
 		if (level < numLevels){
-			if (sp.getVariableSet().contains(level)){
+			Set<Integer> variableSet = getIntegerSet(sp);
+			if (variableSet.contains(level)){
 				if (definedChild == null){
-					definedChild = new SetTree(level + 1, this, numLevels);
+					definedChild = new SetTree<T>(level + 1, this, numLevels);
 				}
-				definedChild.addSolvingPredicate(sp);
+				definedChild.addItem(sp);
 			} else {
 				if (undefinedChild == null){
-					undefinedChild = new SetTree(level + 1, this, numLevels);
+					undefinedChild = new SetTree<T>(level + 1, this, numLevels);
 				}
-				undefinedChild.addSolvingPredicate(sp);
+				undefinedChild.addItem(sp);
 			}
 		}
 	}
 	
-	public void removeSolvingPredicate(SolvingPredicate sp){
+	public void removeItem(T sp){
 		members.remove(sp);
 		
 		if (this.members.size() == 0){
@@ -55,23 +57,24 @@ public class SetTree {
 			return;
 		}
 		
-		SetTree child;
-		if (sp.getVariableSet().contains(level)){
+		SetTree<T> child;
+		Set<Integer> integerSet = getIntegerSet(sp);
+		if (integerSet.contains(level)){
 			child = definedChild;
 		} else {
 			child = undefinedChild;
 		}
-		child.removeSolvingPredicate(sp);
+		child.removeItem(sp);
 	}
 	
-	public SetTree getDeepestTwoPersonSet(){
-		SetTree definedResult = null;
+	public SetTree<T> getDeepestTwoMemberTree(){
+		SetTree<T> definedResult = null;
 		if (definedChild != null){
-			definedResult = this.definedChild.getDeepestTwoPersonSet();
+			definedResult = this.definedChild.getDeepestTwoMemberTree();
 		}
-		SetTree undefinedResult = null;
+		SetTree<T> undefinedResult = null;
 		if (undefinedChild != null){
-			undefinedResult = this.undefinedChild.getDeepestTwoPersonSet();
+			undefinedResult = this.undefinedChild.getDeepestTwoMemberTree();
 		}
 		if (definedResult != null && undefinedResult != null){
 			if (definedResult.level > undefinedResult.level){
@@ -93,7 +96,23 @@ public class SetTree {
 		return null;
 	}
 	
-	public List<SolvingPredicate> getMembers(){
-		return new ArrayList<SolvingPredicate>(members);
+	public List<T> getMembers(){
+		return new ArrayList<T>(members);
+	}
+
+	private Set<Integer> getIntegerSet(T object){
+		if (object instanceof SolvingPredicate){
+			SolvingPredicate sp = (SolvingPredicate) object;
+			return sp.getVariableSet();
+		} else if (object instanceof int[]){
+			int[] array = (int[]) object;
+			Set<Integer> set = new HashSet<Integer>();
+			for (int i : array){
+				set.add(i);
+			}
+			return set;
+		} else {
+			return null;
+		}
 	}
 }
