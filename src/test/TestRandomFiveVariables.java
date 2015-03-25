@@ -1,9 +1,8 @@
 package test;
 
-import java.math.BigInteger;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import smart.PredicateSolver;
 import smart.RandomPredicateGenerator;
