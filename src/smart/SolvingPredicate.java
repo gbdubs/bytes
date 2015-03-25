@@ -15,6 +15,10 @@ public class SolvingPredicate {
 	private Set<Integer> variableSet;
 	private int id;
 	
+	public static void main(String[] args){
+		
+	}
+	
 	public SolvingPredicate(int[] alpha, boolean[] state){
 		this.state = calculateState(state);
 		this.alphabet = alpha;
@@ -78,6 +82,11 @@ public class SolvingPredicate {
 		byte[] origin = makeNBytesLong(originalState.toByteArray(), bitStringLength / 8);
 		byte[] result = new byte[origin.length * 2];
 		
+		if (originalAlphabet.length < 3){
+			result = new byte[1];
+			result[0] = transposeAlphabetOneVariablePartialState(i, originalState.byteValue());
+		}
+		
 		if (i == originalAlphabet.length){
 			if (ThreeSATPredicate.PRINT) System.out.println(" = DUPLICATE CASE");
 			result = duplicateCase(origin);
@@ -103,6 +112,28 @@ public class SolvingPredicate {
 		return toReturn;
 	}
 	
+	public static byte transposeAlphabetOneVariablePartialState(int index, byte b) {
+		/*if (numVars == 1){
+			if (index == 0){
+				return (byte) (((b & 0x02) << 2) | ((b & 0x02) << 1) | ((b & 0x01) << 1) | ((b & 0x01) << 0));
+			} else if (index == 1){
+				
+			}
+		} else if (numVars == 2){*/
+			if (index == 0){
+				byte firstHalf = (byte) (((b & 0x08) << 4) | ((b & 0x08) << 3) | ((b & 0x04) << 3) | ((b & 0x04) << 2));
+				byte secondHalf = (byte) (((b & 0x02) << 2) | ((b & 0x02) << 1) | ((b & 0x01) << 1) | ((b & 0x01) << 0));
+				return (byte) (firstHalf | secondHalf);
+			} else if (index == 1) {
+				return (byte) (((b & 0x0C) << 4) | ((b & 0x0C) << 2) | ((b & 0x03) << 2) | ((b & 0x03) << 0));
+			} else if (index == 2){
+				return (byte) (((b & 0x0F) << 4) | (b & 0x0F));
+			}
+	//	}
+		System.out.println("ERROR! CODE SHOULD NOT BE REACHED!");
+		return 0;
+	}
+
 	public static byte[] duplicateCase(byte[] origin){
 		byte[] result = new byte[origin.length * 2];
 		for(int k = 0; k < origin.length; k++){
@@ -216,8 +247,6 @@ public class SolvingPredicate {
 		} else if (collapseLength % 1 == 0){
 			if (ThreeSATPredicate.PRINT) System.out.println(" = COLLAPSE ONE CASE");
 			result = collapseOneCase(origin);
-		} else {
-			System.err.println("SHOULD HAVE HAD A VALID COLLAPSE LENGTH");
 		}
 		
 		int[] newAlphabet = new int[alphabet.length - 1];
@@ -264,56 +293,83 @@ public class SolvingPredicate {
 	}
 	
 	public static byte[] collapseFourCase(byte[] origin){
-		byte[] result = new byte[origin.length/2];
-		int resultIndex = 0;
-		for(int i = 0; i < origin.length; i+=2){
-			byte a = origin[i];
-			a = (byte) (a & 0xf0 | ((a & 0x0f) << 4));
-			byte b = origin[i+1];
-			b = (byte) (b & 0x0f | ((b & 0xf0) >> 4));
-			result[resultIndex++] = (byte) (a | b);
+		if (origin.length == 1){
+			byte[] result = new byte[1];
+			byte b = origin[0];
+			result[0] = (byte) (b & 0x0f | ((b & 0xf0) >> 4));
+			return result;
+		} else {
+			byte[] result = new byte[origin.length/2];
+			int resultIndex = 0;
+			for(int i = 0; i < origin.length; i+=2){
+				byte a = origin[i];
+				a = (byte) (a & 0xf0 | ((a & 0x0f) << 4));
+				byte b = origin[i+1];
+				b = (byte) (b & 0x0f | ((b & 0xf0) >> 4));
+				result[resultIndex++] = (byte) (a | b);
+			}
+			return result;
 		}
-		return result;
 	}
 	
 	public static byte[] collapseTwoCase(byte[] origin){
-		byte[] result = new byte[origin.length/2];
-		int resultIndex = 0;
-		for(int i = 0; i < origin.length; i+=2){
-			byte a = origin[i];
-			byte b = origin[i+1];
-
-			byte c = (byte) ((a & 0xC0) | ((a & 0x30) << 2));
-			byte d = (byte) (((a & 0x0C) << 2) | ((a & 0x03) << 4));
-			
+		if (origin.length == 1){
+			byte[] result = new byte[1];
+			byte b = origin[0];
 			byte e = (byte) (((b & 0xC0) >> 4) | ((b & 0x30) >> 2));
 			byte f = (byte) (((b & 0x0C) >> 2) | (b & 0x03));
-			
-			result[resultIndex++] = (byte) (c | d | e | f);
+			result[0] = (byte) (e | f);
+			return result;
+		} else {
+			byte[] result = new byte[origin.length/2];
+			int resultIndex = 0;
+			for(int i = 0; i < origin.length; i+=2){
+				byte a = origin[i];
+				byte b = origin[i+1];
+	
+				byte c = (byte) ((a & 0xC0) | ((a & 0x30) << 2));
+				byte d = (byte) (((a & 0x0C) << 2) | ((a & 0x03) << 4));
+				
+				byte e = (byte) (((b & 0xC0) >> 4) | ((b & 0x30) >> 2));
+				byte f = (byte) (((b & 0x0C) >> 2) | (b & 0x03));
+				
+				result[resultIndex++] = (byte) (c | d | e | f);
+			}
+			return result;
 		}
-		return result;
 	}
 	
 	public static byte[] collapseOneCase(byte[] origin){
-		byte[] result = new byte[origin.length/2];
-		int resultIndex = 0;
-		for(int p = 0; p < origin.length; p+=2){
-			byte a = origin[p];
-			byte b = origin[p+1];
-
-			byte c = (byte) ((a & 0x80) << 0 | ((a & 0x40) << 1));
-			byte d = (byte) ((a & 0x20) << 1 | ((a & 0x10) << 2));
-			byte e = (byte) ((a & 0x08) << 2 | ((a & 0x04) << 3));
-			byte f = (byte) ((a & 0x02) << 3 | ((a & 0x01) << 4));
-			
+		if (origin.length == 1){
+			byte b = origin[0];
 			byte g = (byte) ((b & 0x80) >> 4 | ((b & 0x40) >> 3));
 			byte h = (byte) ((b & 0x20) >> 3 | ((b & 0x10) >> 2));
 			byte i = (byte) ((b & 0x08) >> 2 | ((b & 0x04) >> 1));
 			byte j = (byte) ((b & 0x02) >> 1 | ((b & 0x01) >> 0));
-			
-			result[resultIndex++] = (byte) (c | d | e | f | g | h | i | j);
+			byte[] result = new byte[1];
+			result[0] = (byte) (g | h | i | j);
+			return result;
+		} else {
+			byte[] result = new byte[origin.length/2];
+			int resultIndex = 0;
+			for(int p = 0; p < origin.length; p+=2){
+				byte a = origin[p];
+				byte b = origin[p+1];
+	
+				byte c = (byte) ((a & 0x80) << 0 | ((a & 0x40) << 1));
+				byte d = (byte) ((a & 0x20) << 1 | ((a & 0x10) << 2));
+				byte e = (byte) ((a & 0x08) << 2 | ((a & 0x04) << 3));
+				byte f = (byte) ((a & 0x02) << 3 | ((a & 0x01) << 4));
+				
+				byte g = (byte) ((b & 0x80) >> 4 | ((b & 0x40) >> 3));
+				byte h = (byte) ((b & 0x20) >> 3 | ((b & 0x10) >> 2));
+				byte i = (byte) ((b & 0x08) >> 2 | ((b & 0x04) >> 1));
+				byte j = (byte) ((b & 0x02) >> 1 | ((b & 0x01) >> 0));
+				
+				result[resultIndex++] = (byte) (c | d | e | f | g | h | i | j);
+			}
+			return result;
 		}
-		return result;
 	}
 	
 	private static int[] getTargetAlphabet(int[] alpha1, int[] alpha2){
@@ -380,6 +436,20 @@ public class SolvingPredicate {
 		return result;
 	}
 
+	public boolean satisfiedBy(boolean[] vars){
+		boolean[] importantVars = new boolean[alphabet.length];
+		for (int i = 0; i < alphabet.length; i++){
+			int var = alphabet[i];
+			importantVars[i] = vars[var];
+		}
+		BigInteger specificState = twoPowPow(importantVars.length + 1).subtract(BigInteger.ONE);
+		for (int i = 0; i < importantVars.length; i++){
+			BigInteger temp = calculateSingleVariableState(i, importantVars.length, importantVars[i]);
+			specificState = specificState.and(temp);
+		}
+		return ! specificState.and(state).equals(BigInteger.ZERO);
+	}
+
 	public static int twoPow(int i){
 		return 1 << i;
 	}
@@ -408,7 +478,11 @@ public class SolvingPredicate {
 			byteString = byteString.substring(byteString.length() - 8);
 			result = result + byteString + ", ";
 		}
-		result = result.substring(0, result.length() - 2) + "]";
+		if (result.length() > 2){
+			result = result.substring(0, result.length() - 2) + "]";
+		} else {
+			result = "[]";
+		}
 		if (print){
 			if (ThreeSATPredicate.PRINT) System.out.println(result);
 		}

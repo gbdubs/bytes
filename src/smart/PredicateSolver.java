@@ -3,6 +3,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,13 +14,22 @@ public class PredicateSolver {
 	private SetTree tree;
 	private List<Set<Integer>> variableSets;
 	private List<SolvingPredicate> solvingPredicates;
-	Map<Integer, Integer> counts;
-	private Map<Integer, SolvingPredicate> finalDependencies;
+	private Map<Integer, Set<SolvingPredicate>> definedOn;
+	private Map<Integer, SolvingPredicate> lastPredicateStanding;
+	
+	public static void main(String[] args){
+		ThreeSATPredicate.PRINT = true;
+		ThreeSATPredicate tsp = RandomPredicateGenerator.generateRandomThreeSat(6, 5);
+		System.out.println(tsp.toString());
+		PredicateSolver ps = new PredicateSolver(tsp);
+		ps.solve();
+	}
 	
 	public PredicateSolver(ThreeSATPredicate pred){
 		solvingPredicates = new ArrayList<SolvingPredicate>();
 		variableSets = new ArrayList<Set<Integer>>();
-		counts = new HashMap<Integer, Integer>();
+		definedOn = new HashMap<Integer, Set<SolvingPredicate>>();
+		lastPredicateStanding = new HashMap<Integer, SolvingPredicate>();
 		int max = 0;
 		for(SubPredicate sp : pred.subPredicates){
 			max = Math.max(max, sp.variables[2]);
@@ -30,21 +40,57 @@ public class PredicateSolver {
 		}
 	}
 	
-	public BigInteger solve(){
+	public boolean[] solve(){
 		while (solvingPredicates.size() > 1){
 			if (ThreeSATPredicate.PRINT) System.out.println("********************************CURRENT STATE**************************************");
 			if (ThreeSATPredicate.PRINT) System.out.println(toString());
+			checkForCollapsable();
 			int[] toCombine = choosePairToCombine();
 			SolvingPredicate b = removeSolvingPredicate(toCombine[1]);
 			SolvingPredicate a = removeSolvingPredicate(toCombine[0]);
 			SolvingPredicate c = SolvingPredicate.conjoin(a, b);
 			addSolvingPredicate(c);
 			if (c.getState().equals(BigInteger.ZERO)){
-				return BigInteger.ZERO;
+				return null;
 			}
 			if (ThreeSATPredicate.PRINT) System.out.println("***********************************************************************************");
 		}
-		return solvingPredicates.get(0).getState();
+		return backtrackSolution();
+	}
+	
+	private boolean[] backtrackSolution(){
+		Map<Integer, Boolean> mapping = new HashMap<Integer, Boolean>();
+		SolvingPredicate sp = solvingPredicates.get(0);
+		int[] finalAlphabet = sp.getAlphabet();
+		int solution = sp.getState().getLowestSetBit();
+		int twoPow = 2;
+		for(int i = 0; i < finalAlphabet.length; i++){
+			mapping.put(i, (solution % twoPow != 0));
+			twoPow = twoPow * 2;
+		}
+		for (int variable : lastPredicateStanding){
+			
+		}
+		
+		
+		return null;
+	}
+	
+	public void checkForCollapsable(){
+		for (int v : definedOn.keySet()){
+			Set<SolvingPredicate> sps = definedOn.get(v);
+			if (sps.size() == 1){
+				SolvingPredicate alone = sps.iterator().next();
+				if (alone.getAlphabet().length > 1){
+					if (ThreeSATPredicate.PRINT) System.out.println("***************** COLLAPSING "+alone.getId()+" ******************");
+					lastPredicateStanding.put(v, alone);
+					SolvingPredicate collapsed = alone.collapseOnVariable(v);
+					this.removeSolvingPredicate(alone);
+					this.addSolvingPredicate(collapsed);
+					if (ThreeSATPredicate.PRINT) System.out.println("***************** COLLAPSED INTO "+collapsed.getId()+" ******************");
+				}
+			}
+		}
 	}
 	
 	public String toString(){
@@ -77,32 +123,31 @@ public class PredicateSolver {
 		Set<Integer> variableSet = sp.getVariableSet();
 		variableSets.add(variableSet);
 		for (Integer c : variableSet){
-			incrementCountMap(c);
+			Set<SolvingPredicate> sps = definedOn.get(c);
+			if (sps == null) sps = new HashSet<SolvingPredicate>();
+			sps.add(sp);
+			definedOn.put(c, sps);
 		}
 		tree.addSolvingPredicate(sp);
 	}
 
+	private SolvingPredicate removeSolvingPredicate(SolvingPredicate toRemove){
+		int index = solvingPredicates.indexOf(toRemove);
+		return removeSolvingPredicate(index);
+	}
+	
 	private SolvingPredicate removeSolvingPredicate(int i){
-		SolvingPredicate r = solvingPredicates.remove(i);
-		Set<Integer> set = variableSets.remove(i);
-		for(Integer k : set){
-			decrementCountMap(k);
+		SolvingPredicate sp = solvingPredicates.remove(i);
+		Set<Integer> variableSet = variableSets.remove(i);
+		for(Integer c : variableSet){
+			Set<SolvingPredicate> sps = definedOn.get(c);
+			if (sps != null){ 
+				sps.remove(sp);
+				definedOn.put(c, sps);
+			}
 		}
-		tree.removeSolvingPredicate(r);
-		return r;
+		tree.removeSolvingPredicate(sp);
+		return sp;
 	}
-	
-	private void incrementCountMap(int c){
-		if (counts.containsKey(c)){
-			counts.put(c, counts.get(c) + 1);
-		} else {
-			counts.put(c, 1);
-		}
-	}
-	
-	private void decrementCountMap(int c){
-		if (counts.containsKey(c)){
-			counts.put(c, counts.get(c) - 1);
-		} 
-	}
+
 }

@@ -7,6 +7,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({ 
 	TestAlphabetTranslation.class,
 	TestCombination.class, 
+	TestCollapse.class,
 	TestExhaustiveFourVariables.class,
 	TestExhaustiveThreeVariables.class,
 	TestHelperFunctions.class,
@@ -14,6 +15,7 @@ import org.junit.runners.Suite;
 	TestNegatedCombination.class,
 	TestPredicateNumberSystem.class,
 	TestRandomFiveVariables.class,
+	TestSingleByteConversions.class,
 	TestTwoPowers.class
 })
 
