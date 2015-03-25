@@ -15,21 +15,24 @@ public class PredicateSolver {
 	private List<Set<Integer>> variableSets;
 	private List<SolvingPredicate> solvingPredicates;
 	private Map<Integer, Set<SolvingPredicate>> definedOn;
-	private Map<Integer, SolvingPredicate> lastPredicateStanding;
+	private List<SolvingPredicate> lastPredicateStanding;
+	private List<Integer> lastCorrespondingVariable;
 	
 	public static void main(String[] args){
 		ThreeSATPredicate.PRINT = true;
 		ThreeSATPredicate tsp = RandomPredicateGenerator.generateRandomThreeSat(6, 5);
 		System.out.println(tsp.toString());
 		PredicateSolver ps = new PredicateSolver(tsp);
-		ps.solve();
+		boolean[] solution = ps.solve();
+		System.out.println("SOLUTION: " + Arrays.toString(solution));
 	}
 	
 	public PredicateSolver(ThreeSATPredicate pred){
 		solvingPredicates = new ArrayList<SolvingPredicate>();
 		variableSets = new ArrayList<Set<Integer>>();
 		definedOn = new HashMap<Integer, Set<SolvingPredicate>>();
-		lastPredicateStanding = new HashMap<Integer, SolvingPredicate>();
+		lastPredicateStanding = new ArrayList<SolvingPredicate>();
+		lastCorrespondingVariable = new ArrayList<Integer>();
 		int max = 0;
 		for(SubPredicate sp : pred.subPredicates){
 			max = Math.max(max, sp.variables[2]);
@@ -59,23 +62,49 @@ public class PredicateSolver {
 	}
 	
 	private boolean[] backtrackSolution(){
-		Map<Integer, Boolean> mapping = new HashMap<Integer, Boolean>();
+		
 		SolvingPredicate sp = solvingPredicates.get(0);
 		int[] finalAlphabet = sp.getAlphabet();
+		int numVariables = getHighestVariableNumber() + 1;
+		boolean[] solvingVector = new boolean[numVariables];
+		
+		
 		int solution = sp.getState().getLowestSetBit();
-		int twoPow = 2;
-		for(int i = 0; i < finalAlphabet.length; i++){
-			mapping.put(i, (solution % twoPow != 0));
-			twoPow = twoPow * 2;
+		int twoPow = (int) Math.pow(2, finalAlphabet.length - 1);
+		for(int i = finalAlphabet.length - 1; i >= 0; i--){
+			solvingVector[finalAlphabet[i]] = (solution / twoPow == 0);
+			solution = solution % twoPow;
+			twoPow = twoPow / 2;
 		}
-		for (int variable : lastPredicateStanding){
+		
+		for (int i = lastCorrespondingVariable.size() - 1; i >= 0; i--){
+			int variable = lastCorrespondingVariable.get(i);
+			boolean[] tempFalse = solvingVector.clone();
+			tempFalse[variable] = false;
+			boolean[] tempTrue = solvingVector.clone();
+			tempTrue[variable] = true;
 			
+			SolvingPredicate alone = lastPredicateStanding.get(i);
+			if (alone.satisfiedBy(tempTrue)){
+				solvingVector[variable] = true;
+			} else if (alone.satisfiedBy(tempFalse)){
+				solvingVector[variable] = false;
+			} else {
+				System.out.println("HOUSON WE HAVE A PROBLEM. ONE OF THESE SHOULD SOLVE IT.");
+			}
 		}
 		
-		
-		return null;
+		return solvingVector;
 	}
 	
+	private int getHighestVariableNumber() {
+		int max = 0;
+		for (int i : definedOn.keySet()){
+			max = Math.max(i, max);
+		}
+		return max;
+	}
+
 	public void checkForCollapsable(){
 		for (int v : definedOn.keySet()){
 			Set<SolvingPredicate> sps = definedOn.get(v);
@@ -83,7 +112,8 @@ public class PredicateSolver {
 				SolvingPredicate alone = sps.iterator().next();
 				if (alone.getAlphabet().length > 1){
 					if (ThreeSATPredicate.PRINT) System.out.println("***************** COLLAPSING "+alone.getId()+" ******************");
-					lastPredicateStanding.put(v, alone);
+					lastPredicateStanding.add(alone);
+					lastCorrespondingVariable.add(v);
 					SolvingPredicate collapsed = alone.collapseOnVariable(v);
 					this.removeSolvingPredicate(alone);
 					this.addSolvingPredicate(collapsed);

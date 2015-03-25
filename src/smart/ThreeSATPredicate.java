@@ -29,6 +29,15 @@ public class ThreeSATPredicate {
 		numVariables++;
 	}
 	
+	public boolean satisfiedBy(boolean[] vector){
+		for(SubPredicate sp : subPredicates){
+			if (! sp.getSolvingPredicate().satisfiedBy(vector)){
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public String toString(){
 		String result = "";
 		for (SubPredicate sp : subPredicates){
