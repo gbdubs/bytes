@@ -11,7 +11,6 @@ import java.util.Set;
 
 public class PredicateSolver {
 	
-	private SetTree<SolvingPredicate> tree;
 	private List<Set<Integer>> variableSets;
 	private List<SolvingPredicate> solvingPredicates;
 	private Map<Integer, Set<SolvingPredicate>> definedOn;
@@ -37,7 +36,6 @@ public class PredicateSolver {
 		for(SubPredicate sp : pred.subPredicates){
 			max = Math.max(max, sp.variables[2]);
 		}
-		tree = new SetTree<SolvingPredicate>(0, null, max);
 		for(SubPredicate sp : pred.subPredicates){
 			addSolvingPredicate(sp.getSolvingPredicate());
 		}
@@ -102,10 +100,14 @@ public class PredicateSolver {
 		for (int i : definedOn.keySet()){
 			max = Math.max(i, max);
 		}
+		for (int i : lastCorrespondingVariable){
+			max = Math.max(i, max);
+		}
 		return max;
 	}
 
 	public void checkForCollapsable(){
+		Set<Integer> toRemove = new HashSet<Integer>();
 		for (int v : definedOn.keySet()){
 			Set<SolvingPredicate> sps = definedOn.get(v);
 			if (sps.size() == 1){
@@ -120,6 +122,12 @@ public class PredicateSolver {
 					if (ThreeSATPredicate.PRINT) System.out.println("***************** COLLAPSED INTO "+collapsed.getId()+" ******************");
 				}
 			}
+			if (definedOn.get(v).size() == 0){
+				toRemove.add(v);
+			}
+		}
+		for(int v : toRemove){
+			definedOn.remove(v);
 		}
 	}
 	
@@ -148,18 +156,12 @@ public class PredicateSolver {
 				return result;
 			}
 		} else {
-			SetTree<SolvingPredicate> st = tree.getDeepestTwoMemberTree();
-			 
-			List<SolvingPredicate> members = st.getMembers();
-			int i = solvingPredicates.indexOf(members.get(0));
-			int j = solvingPredicates.indexOf(members.get(1));
-			int[] results = new int[2];
-			if (i < j){
-				results[0] = i; results[1] = j;
-			} else {
-				results[1] = i; results[0] = j;
-			}
-			return results;
+			// If we reach this case, then there are NO SHARED VARIABLES AMONG ANY OF THE SOLIVNG PREDICATES
+			// So we can simply return {0, 1}, as we know there are at least two remaining, and we know that
+			// all choices are equally good/shitty
+			
+			int[] toReturn = {0,1};
+			return toReturn;
 		}
 	}
 	
@@ -226,7 +228,6 @@ public class PredicateSolver {
 			sps.add(sp);
 			definedOn.put(c, sps);
 		}
-		tree.addItem(sp);
 	}
 
 	private SolvingPredicate removeSolvingPredicate(SolvingPredicate toRemove){
@@ -241,10 +242,8 @@ public class PredicateSolver {
 			Set<SolvingPredicate> sps = definedOn.get(c);
 			if (sps != null){ 
 				sps.remove(sp);
-				definedOn.put(c, sps);
 			}
 		}
-		tree.removeItem(sp);
 		return sp;
 	}
 
