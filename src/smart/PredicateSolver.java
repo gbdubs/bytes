@@ -136,30 +136,31 @@ public class PredicateSolver {
 	
 	private int[] choosePairToCombine() {
 		int variableToCollapse = chooseVariableToTryToCollapse();
-		SolvingPredicate[] pair = getPairToCombineFromSet(definedOn.get(variableToCollapse));
-		int i = solvingPredicates.indexOf(pair[0]);
-		int j = solvingPredicates.indexOf(pair[1]);
-		if (i > j){
-			int[] result = {j, i};
-			return result;
+		if (variableToCollapse >= 0){
+			SolvingPredicate[] pair = getPairToCombineFromSet(definedOn.get(variableToCollapse));
+			int i = solvingPredicates.indexOf(pair[0]);
+			int j = solvingPredicates.indexOf(pair[1]);
+			if (i > j){
+				int[] result = {j, i};
+				return result;
+			} else {
+				int[] result = {i, j};
+				return result;
+			}
 		} else {
-			int[] result = {i, j};
-			return result;
+			SetTree<SolvingPredicate> st = tree.getDeepestTwoMemberTree();
+			 
+			List<SolvingPredicate> members = st.getMembers();
+			int i = solvingPredicates.indexOf(members.get(0));
+			int j = solvingPredicates.indexOf(members.get(1));
+			int[] results = new int[2];
+			if (i < j){
+				results[0] = i; results[1] = j;
+			} else {
+				results[1] = i; results[0] = j;
+			}
+			return results;
 		}
-		/*
-		SetTree<SolvingPredicate> st = tree.getDeepestTwoMemberTree();
-		 
-		List<SolvingPredicate> members = st.getMembers();
-		int i = solvingPredicates.indexOf(members.get(0));
-		int j = solvingPredicates.indexOf(members.get(1));
-		int[] results = new int[2];
-		if (i < j){
-			results[0] = i; results[1] = j;
-		} else {
-			results[1] = i; results[0] = j;
-		}
-		return results;
-		*/
 	}
 	
 	private SolvingPredicate[] getPairToCombineFromSet(Set<SolvingPredicate> spsSet){
