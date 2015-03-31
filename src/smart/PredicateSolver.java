@@ -135,7 +135,20 @@ public class PredicateSolver {
 	}
 	
 	private int[] choosePairToCombine() {
+		int variableToCollapse = chooseVariableToTryToCollapse();
+		SolvingPredicate[] pair = getPairToCombineFromSet(definedOn.get(variableToCollapse));
+		int i = solvingPredicates.indexOf(pair[0]);
+		int j = solvingPredicates.indexOf(pair[1]);
+		if (i > j){
+			int[] result = {j, i};
+			return result;
+		} else {
+			int[] result = {i, j};
+			return result;
+		}
+		/*
 		SetTree<SolvingPredicate> st = tree.getDeepestTwoMemberTree();
+		 
 		List<SolvingPredicate> members = st.getMembers();
 		int i = solvingPredicates.indexOf(members.get(0));
 		int j = solvingPredicates.indexOf(members.get(1));
@@ -146,6 +159,60 @@ public class PredicateSolver {
 			results[1] = i; results[0] = j;
 		}
 		return results;
+		*/
+	}
+	
+	private SolvingPredicate[] getPairToCombineFromSet(Set<SolvingPredicate> spsSet){
+		if (spsSet.size() < 2){
+			return null;
+		}
+		
+		List<SolvingPredicate> sps = new ArrayList<SolvingPredicate>(spsSet);
+		int minJ = -1;
+		int minI = -1;
+		int minDiff = 1000000;
+		
+		for(int i = 0; i < sps.size(); i++){
+			for (int j = 0; j < i; j++){
+				Set<Integer> set = new HashSet<Integer>();
+				Set<Integer> iSet = sps.get(i).getVariableSet();
+				Set<Integer> jSet = sps.get(j).getVariableSet();
+				set.addAll(iSet);
+				set.addAll(jSet);
+				int diff = set.size() - Math.max(iSet.size(), jSet.size());
+				if (diff == 0){
+					SolvingPredicate[] result = {sps.get(j), sps.get(i)};
+					return result;
+				} else if (diff < minDiff){
+					minDiff = diff;
+					minI = i;
+					minJ = j;
+				}
+			}
+		}
+		
+		SolvingPredicate[] result = {sps.get(minJ), sps.get(minI)};
+		return result;
+	}
+	
+	private int chooseVariableToTryToCollapse(){
+		int minVariable = -1;
+		int minCombined = 1000000;
+		
+		for (int v : definedOn.keySet()){
+			Set<SolvingPredicate> sps = definedOn.get(v);
+			if (sps.size() >= 2){
+				Set<Integer> vars = new HashSet<Integer>();
+				for(SolvingPredicate sp : sps){
+					vars.addAll(sp.getVariableSet());
+				}
+				if (vars.size() < minCombined){
+					minVariable = v;
+					minCombined = vars.size();
+				}
+			}
+		}
+		return minVariable;
 	}
 	
 	private void addSolvingPredicate(SolvingPredicate sp){

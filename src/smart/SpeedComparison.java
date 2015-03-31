@@ -47,7 +47,7 @@ public class SpeedComparison {
 	
 	/*              IMPORTANT RESULTS (N = 10,000)
 	
-	              E X P R E S S I O N S
+	               E X P R E S S I O N S
 	   
 	             50    100     200     400
 	V          
@@ -61,7 +61,7 @@ public class SpeedComparison {
     S     14    4477    9869   15667   31599
 	      15    6866    8455   16442   33657
 	      20    6657   10501   21045   44542
-	      25   22919   14764   27495   56946   
+	    
 	      		^
 	 			|
 	 	   	   ???
